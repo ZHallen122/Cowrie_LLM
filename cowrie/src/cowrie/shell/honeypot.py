@@ -17,6 +17,13 @@ from twisted.python.compat import iterbytes
 from cowrie.core.config import CowrieConfig
 from cowrie.shell import fs
 
+import sys
+sys.path.insert(0, '/home/zhallen/code_project/cowrie_LLM/Cowrie_LLM/LLM/GPT_3.5')
+
+from gpt_utils import query_gpt3_for_unrecognized_command
+
+
+
 
 class HoneyPotShell:
     def __init__(
@@ -315,20 +322,28 @@ class HoneyPotShell:
                     )
                     lastpp = pp
             else:
-                log.msg(
-                    eventid="cowrie.command.failed",
-                    input=" ".join(cmd2),
-                    format="Command not found: %(input)s",
-                )
-                self.protocol.terminal.write(
-                    "-bash: {}: command not found\n".format(cmd["command"]).encode(
-                        "utf8"
-                    )
-                )
+                # log.msg(
+                #     eventid="cowrie.command.failed",
+                #     input=" ".join(cmd2),
+                #     format="Command not found: %(input)s",
+                # )
+                # self.protocol.terminal.write(
+                #     "-bash: {}: command not found\n".format(cmd["command"]).encode(
+                #         "utf8"
+                #     )
+                # )
 
-                if not self.interactive:
-                    stat = failure.Failure(error.ProcessDone(status=""))
-                    self.protocol.terminal.transport.processEnded(stat)
+                # if not self.interactive:
+                #     stat = failure.Failure(error.ProcessDone(status=""))
+                #     self.protocol.terminal.transport.processEnded(stat)
+
+                llm_response = query_gpt3_for_unrecognized_command(cmd["command"], cmd["rargs"])
+                if llm_response:
+                    log.msg(eventid='cowrie.command.success', input=cmd["command"], output=llm_response, format="LLM response for unrecognized command: %(input)s, %(output)s")
+                    self.protocol.terminal.write(llm_response.encode("utf-8") + b"\n")
+                else:
+                    log.msg(eventid='cowrie.command.failed', input=cmd["command"], format="Command not found: %(input)s")
+                    self.protocol.terminal.write(f"-bash: {cmd['command']}: command not found\n".encode("utf-8"))
 
                 runOrPrompt()
                 pp = None  # Got a error. Don't run any piped commands

@@ -11,3 +11,4 @@ service_identity==24.1.0
 tftpy==0.8.2
 treq==23.11.0
 twisted==23.10.0
+openai==1.12.0

@@ -337,6 +337,7 @@ class HoneyPotShell:
                 #     stat = failure.Failure(error.ProcessDone(status=""))
                 #     self.protocol.terminal.transport.processEnded(stat)
 
+                # Using llm to handel unknow command, should also set up error handeling when llm have error
                 llm_response = query_gpt3_for_unrecognized_command(cmd["command"], cmd["rargs"])
                 if llm_response:
                     log.msg(eventid='cowrie.command.success', input=cmd["command"], output=llm_response, format="LLM response for unrecognized command: %(input)s, %(output)s")

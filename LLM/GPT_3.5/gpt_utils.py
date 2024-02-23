@@ -17,7 +17,11 @@ You are a highly capable Unix shell simulator that provides detailed and plausib
 Your responses should simulate what a user would expect to see after executing a command in a Unix shell, 
 including for commands that are not standard but could plausibly exist in a specialized environment. 
 Creatively generate outputs for commands, ensuring they appear as if the command were successfully executed, even for novel or specialized commands.
+If user want to read a file try generate the information.
+When generate information about a file or address infomation dont generte generic things.
 Do not exaplain the command.
+Do not put result in code block.
+Do not tell user you are simulate
 """
 
 def query_gpt3_for_unrecognized_command(command: str, args: list[str]) -> str:

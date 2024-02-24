@@ -18,7 +18,9 @@ from cowrie.core.config import CowrieConfig
 from cowrie.shell import fs
 
 import sys
-sys.path.insert(0, '/home/zhallen/code_project/cowrie_LLM/Cowrie_LLM/LLM/GPT_3.5')
+current_script_path = os.path.dirname(os.path.abspath(__file__))
+module_path = os.path.join(current_script_path, '../../../../LLM/GPT_3.5')
+sys.path.insert(0, module_path)
 
 from gpt_utils import query_gpt3_for_unrecognized_command
 import time

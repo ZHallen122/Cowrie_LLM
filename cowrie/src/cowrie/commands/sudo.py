@@ -3,6 +3,7 @@ import getopt
 
 from cowrie.shell.command import HoneyPotCommand
 from cowrie.shell.honeypot import StdOutStdErrEmulationProtocol
+from gpt_utils import query_gpt3_for_unrecognized_command
 
 commands = {}
 
@@ -115,23 +116,56 @@ class Command_sudo(HoneyPotCommand):
                 self.long_help()
                 return
 
-        if len(parsed_arguments) > 0:
+        # oringinal code
+        # if len(parsed_arguments) > 0:
+        #     cmd = parsed_arguments[0]
+        #     cmdclass = self.protocol.getCommand(cmd, self.environ["PATH"].split(":"))
+
+        #     if cmdclass:
+        #         command = StdOutStdErrEmulationProtocol(
+        #             self.protocol, cmdclass, parsed_arguments[1:], None, None
+        #         )
+        #         self.protocol.pp.insert_command(command)
+        #         # this needs to go here so it doesn't write it out....
+        #         if self.input_data:
+        #             self.writeBytes(self.input_data)
+        #         self.exit()
+        #     else:
+        #         self.short_help()
+        # else:
+        #     self.short_help()
+
+        if not parsed_arguments:
+        # The command is not recognized; use GPT for a realistic simulation
+            if self.args:
+                # Combine the command and arguments
+                cmd = self.args[0]  # The command
+                args = self.args[1:]  # The rest arguments
+                gpt_response = query_gpt3_for_unrecognized_command(cmd, args)
+                self.write(gpt_response + "\n")
+            else:
+                self.short_help()
+            self.exit()
+        else:
             cmd = parsed_arguments[0]
             cmdclass = self.protocol.getCommand(cmd, self.environ["PATH"].split(":"))
 
             if cmdclass:
+                # If a command class is found, proceed as normal
                 command = StdOutStdErrEmulationProtocol(
                     self.protocol, cmdclass, parsed_arguments[1:], None, None
                 )
                 self.protocol.pp.insert_command(command)
-                # this needs to go here so it doesn't write it out....
                 if self.input_data:
                     self.writeBytes(self.input_data)
                 self.exit()
             else:
+                # No command class found; this is an unrecognized command will handel by gpt
+                # args = parsed_arguments[1:]  # Arguments to the unrecognized command
+                # gpt_response = query_gpt3_for_unrecognized_command(cmd, args)
+                # self.write(gpt_response + "\n")
+                # self.exit()
                 self.short_help()
-        else:
-            self.short_help()
 
 
 commands["sudo"] = Command_sudo

@@ -345,10 +345,20 @@ class HoneyPotShell:
                 duration = time.time() - llm_start_time
                 if llm_response:
                     duration_str = "{:.2f}".format(duration)
-                    log.msg(eventid='cowrie.command.success', input=cmd["command"], output=llm_response, format="LLM response for unrecognized command: %(input)s, %(output)s, time used: %(duration_str)s")
+                    log.msg(
+                        eventid='cowrie.command.success', 
+                        input=cmd["command"], 
+                        output=llm_response, 
+                        duration_str=duration_str,  
+                        format="LLM response for unrecognized command: %(input)s, %(output)s, time used: %(duration_str)s"
+                    )
                     self.protocol.terminal.write(llm_response.encode("utf-8") + b"\n")
                 else:
-                    log.msg(eventid='cowrie.command.failed', input=cmd["command"], format="Command not found: %(input)s")
+                    og.msg(
+                        eventid='cowrie.command.failed', 
+                        input=cmd["command"], 
+                        format="Command not found: %(input)s"
+                    )
                     self.protocol.terminal.write(f"-bash: {cmd['command']}: command not found\n".encode("utf-8"))
 
                 runOrPrompt()

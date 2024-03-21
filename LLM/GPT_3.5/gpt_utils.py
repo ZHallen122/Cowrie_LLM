@@ -24,19 +24,22 @@ Do not put result in code block.
 Do not tell user you are simulate
 """
 
-def query_gpt3_for_unrecognized_command(command: str, args: list[str]) -> str:
+def query_gpt3_for_unrecognized_command(command: str, args: list[str] = None) -> str:
 
-    cache_key = f"unrecognized_{command}_{'_'.join(args)}"
+    args_str = ' '.join(args if isinstance(args, list) else [args]) if args else ''
+    cache_key = f"unrecognized_{command}_{args_str}"
+
     if cache_key in gpt_response_cache:
         return gpt_response_cache[cache_key]
 
     try:
+        full_command = f"{command} {args_str}".strip()
         completion = client.chat.completions.create(
             model="gpt-4-turbo-preview",
             temperature = 0.1,
             messages=[
                 {"role": "system", "content": unrecognized_command_prompt},
-                {"role": "user", "content": f"{command} {' '.join(args)}"}
+                {"role": "user", "content": full_command}
             ]
         )
         response = " ".join([choice.message.content for choice in completion.choices])
@@ -48,26 +51,30 @@ def query_gpt3_for_unrecognized_command(command: str, args: list[str]) -> str:
         return ""
 
 
-def query_gpt_for_tcp_simulation(dst_ip, dst_port, data):
+def query_gpt_for_tcp_simulation(dst_ip, dst_port):
 
     cache_key = f"TCP_{dst_ip}_{dst_port}"
     if cache_key in gpt_response_cache:
         return gpt_response_cache[cache_key]
 
-    forward_tcp_prompt = f"""You are an advanced simulation of a Unix shell, 
+    forward_tcp_prompt = f"""You are a highly capable Unix shell simulator that provides detailed and plausible outputs for any command input, 
     capable of interpreting and responding to network commands as if they were executed in a real environment. 
-    Establish a TCP connection to {dst_ip} on port {dst_port} with specific data, 
-    imagine a typical response that such a connection attempt might elicit from a server configured to respond to standard HTTPS requests. 
-    Consider common responses for successful connections, data exchanges, or even errors that could occur during the connection. 
-    Generate a plausible output that reflects what might be seen by a user in this scenario.
-    Do not exaplain the command."""
+    Establish a TCP connection to {dst_ip} on port {dst_port}, simulating the interaction with no actual data being transmitted. 
+    Imagine a typical response that such a connection attempt might elicit from a server configured to respond to standard HTTP requests. 
+    The response should include a valid HTTP status line (e.g., "HTTP/1.1 200 OK"), followed by standard response headers (e.g., Date, Content-Length, Content-Type), and a message body if applicable, separated by an empty line (CRLF).
+    Ensure the Content-Length header accurately reflects the byte length of the HTML body. The body should include typical HTML structure starting with <!DOCTYPE html> and contain elements like <html>, <head>, and <body>
+    Generate a plausible output that reflects what might be seen by a user in this scenario without needing to simulate the actual data transmission.
+    Remember to keep the response concise to fit within a limited token count, focusing on delivering a complete HTTP response within the constraints
+    Do not exaplain the command.
+    Do not tell you are simulate.
+    Do not put result in code block."""
     prompt = forward_tcp_prompt
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
         temperature=0.5,
         messages=[
                 {"role": "system", "content": forward_tcp_prompt},
-                {"role": "user", "content": f"Data: {data}"}
+                {"role": "user", "content": ""}
         ], 
         max_tokens=100 
     )

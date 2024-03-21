@@ -32,6 +32,7 @@ class HoneyPotShell:
         self, protocol: Any, interactive: bool = True, redirect: bool = False
     ) -> None:
         self.protocol = protocol
+        self.lastFullCommand = "" 
         self.interactive: bool = interactive
         self.redirect: bool = redirect  # to support output redirection
         self.cmdpending: list[list[str]] = []
@@ -44,6 +45,7 @@ class HoneyPotShell:
 
     def lineReceived(self, line: str) -> None:
         log.msg(eventid="cowrie.command.input", input=line, format="CMD: %(input)s")
+        self.lastFullCommand = line
         self.lexer = shlex.shlex(instream=line, punctuation_chars=True, posix=True)
         # Add these special characters that are not in the default lexer
         self.lexer.wordchars += "@%{}=$:+^,()`"
@@ -341,13 +343,15 @@ class HoneyPotShell:
 
                 llm_start_time = time.time()
                 # Using llm to handel unknow command, should also set up error handeling when llm have error
-                llm_response = query_gpt3_for_unrecognized_command(cmd["command"], cmd["rargs"])
+                # llm_response = query_gpt3_for_unrecognized_command(cmd["command"], cmd["rargs"])
+                llm_response = query_gpt3_for_unrecognized_command(self.lastFullCommand)
+
                 duration = time.time() - llm_start_time
                 if llm_response:
                     duration_str = "{:.2f}".format(duration)
                     log.msg(
                         eventid='cowrie.command.success', 
-                        input=cmd["command"], 
+                        input=self.lastFullCommand, 
                         output=llm_response, 
                         duration_str=duration_str,  
                         format="LLM response for unrecognized command: %(input)s, %(output)s, time used: %(duration_str)s"

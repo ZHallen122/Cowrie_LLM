@@ -1,9 +1,11 @@
 from __future__ import annotations
 import getopt
 
+from twisted.python import failure, log
 from cowrie.shell.command import HoneyPotCommand
 from cowrie.shell.honeypot import StdOutStdErrEmulationProtocol
 from gpt_utils import query_gpt3_for_unrecognized_command
+import time
 
 commands = {}
 
@@ -139,9 +141,24 @@ class Command_sudo(HoneyPotCommand):
         # The command is not recognized; use GPT for a realistic simulation
             if self.args:
                 # Combine the command and arguments
+
                 cmd = self.args[0]  # The command
                 args = self.args[1:]  # The rest arguments
+
+                start_time = time.time()
+
                 gpt_response = query_gpt3_for_unrecognized_command(cmd, args)
+
+                duration = time.time() - start_time
+                duration_str = "{:.2f} seconds".format(duration)
+
+                log.msg(
+                    eventid='cowrie.command.success', 
+                    input=" ".join(self.args), 
+                    output=gpt_response, 
+                    duration_str=duration_str,
+                    format="LLM response for unrecognized sudo command: %(input)s, %(output)s, time used: %(duration_str)s"
+                )
                 self.write(gpt_response + "\n")
             else:
                 self.short_help()

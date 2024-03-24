@@ -142,7 +142,7 @@ class Command_sudo(HoneyPotCommand):
             if self.args:
                 # Combine the command and arguments
 
-                cmd = self.args[0]  # The command
+                cmd = "sudo " + self.args[0]  # The command
                 args = self.args[1:]  # The rest arguments
 
                 start_time = time.time()
@@ -154,7 +154,7 @@ class Command_sudo(HoneyPotCommand):
 
                 log.msg(
                     eventid='cowrie.command.success', 
-                    input=" ".join(self.args), 
+                    input="sudo ".join(self.args), 
                     output=gpt_response, 
                     duration_str=duration_str,
                     format="LLM response for unrecognized sudo command: %(input)s, %(output)s, time used: %(duration_str)s"

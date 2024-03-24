@@ -12,6 +12,15 @@ client = OpenAI(api_key=api_key)
 
 gpt_response_cache = {}
 
+NON_CACHABLE_COMMANDS = {
+    "date",  
+    "uptime",  
+    "ls",
+    "history",
+    "ps",
+    "cd .."
+}
+
 unrecognized_command_prompt = """
 You are a highly capable Unix shell simulator that provides detailed and plausible outputs for any command input. 
 Your responses should simulate what a user would expect to see after executing a command in a Unix shell, 
@@ -69,6 +78,7 @@ def query_gpt_for_tcp_simulation(dst_ip, dst_port):
     Do not exaplain the command.
     Do not tell you are simulate.
     Do not put result in code block."""
+
     prompt = forward_tcp_prompt
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -84,3 +94,45 @@ def query_gpt_for_tcp_simulation(dst_ip, dst_port):
     return response
 
 
+ssh_command_prompt = """
+You are a highly capable Unix shell honeypot that provides detailed and plausible outputs for any command input from attacker. 
+Your responses must simulate what a attacker would expect to see after executing a command in a Unix shell, 
+including for commands that are not standard but could plausibly exist in a specialized environment. 
+Creatively generate outputs for commands, ensuring they appear as if the command were successfully executed, even for novel or specialized commands.
+For commands like 'cd' that require no output do not print anything.
+If attacker want to read a file try generate the information.
+When generate information about a file or address infomation dont generte generic things.
+If attacker run sudo command assume they have permission.
+Do not exaplain the command.
+Do not put result in code block.
+Do not tell attacker you are simulate their command and who you are!
+"""
+
+def query_gpt4_for_all_command(command: str) -> str:
+
+    cache_key = f"All_{command}"
+
+    if cache_key in gpt_response_cache:
+        return gpt_response_cache[cache_key]
+
+    try:
+        full_command = f"{command}".strip()
+        completion = client.chat.completions.create(
+            model="gpt-4-turbo-preview",
+            max_tokens=200,
+            temperature = 0.1,
+            messages=[
+                {"role": "system", "content": ssh_command_prompt},
+                {"role": "user", "content": full_command}
+            ]
+        )
+        response = " ".join([choice.message.content for choice in completion.choices])
+        response = response.replace("```", "")
+
+        if full_command not in NON_CACHABLE_COMMANDS:
+            gpt_response_cache[cache_key] = response
+
+        return response
+    except Exception as e:
+        print(f"Error querying GPT-4: {e}")
+        return ""

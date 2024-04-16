@@ -18,9 +18,9 @@ Then Follow the oringinal Cowrie documentation After step1
 https://cowrie.readthedocs.io/en/latest/INSTALL.html
 
 # Folder structure
-/logging    The analysis script folder
-/cowrie    The original Cowrie with code handle with LLM
-/LLM/GPT_3.5    Have files to handel command using gpt
+- `/logging` - The analysis script folder.
+- `/cowrie` - The original Cowrie with code handle with LLM.
+- `/LLM/GPT_3.5` - Have files to handle commands using GPT.
 
 # Files change in the original Cowrie
 ## /cowrie/src/cowrie/shell/honeypot.py This change the code chunk in def lineReceived(self, line: str) -> None: 

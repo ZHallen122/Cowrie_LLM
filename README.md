@@ -25,6 +25,7 @@ https://cowrie.readthedocs.io/en/latest/INSTALL.html
 # Files change in the original Cowrie
 /cowrie/src/cowrie/shell/honeypot.py This change the code chunk in def lineReceived(self, line: str) -> None: 
 Handle all the command.
+
     standardized_line = line.strip().lower()
     if standardized_line in ["exit", "logout", "shutdown", "reboot", "halt"]:
             self.protocol.terminal.loseConnection()
@@ -53,6 +54,7 @@ Handle all the command.
 
 Handle unrecgnize command
 you need to comment the handle all command code and then uncomment code below
+
     # while True:
         #     try:
         #         tokkie: str | None = self.lexer.get_token()

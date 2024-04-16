@@ -23,7 +23,7 @@ https://cowrie.readthedocs.io/en/latest/INSTALL.html
 /LLM/GPT_3.5    Have files to handel command using gpt
 
 # Files change in the original Cowrie
-/cowrie/src/cowrie/shell/honeypot.py This change the code chunk in def lineReceived(self, line: str) -> None: 
+## /cowrie/src/cowrie/shell/honeypot.py This change the code chunk in def lineReceived(self, line: str) -> None: 
 Handle all the command.
 
     standardized_line = line.strip().lower()
@@ -130,3 +130,71 @@ you need to comment the handle all command code and then uncomment code below
         #     self.runCommand()
         # else:
         #     self.showPrompt()
+
+## /cowrie/src/cowrie/commands/sudo.py change the code in def start(self) -> None:
+
+     # oringinal code
+        # if len(parsed_arguments) > 0:
+        #     cmd = parsed_arguments[0]
+        #     cmdclass = self.protocol.getCommand(cmd, self.environ["PATH"].split(":"))
+
+        #     if cmdclass:
+        #         command = StdOutStdErrEmulationProtocol(
+        #             self.protocol, cmdclass, parsed_arguments[1:], None, None
+        #         )
+        #         self.protocol.pp.insert_command(command)
+        #         # this needs to go here so it doesn't write it out....
+        #         if self.input_data:
+        #             self.writeBytes(self.input_data)
+        #         self.exit()
+        #     else:
+        #         self.short_help()
+        # else:
+        #     self.short_help()
+
+        if not parsed_arguments:
+        # The command is not recognized; use GPT for a realistic simulation
+            if self.args:
+                # Combine the command and arguments
+
+                cmd = "sudo " + self.args[0]  # The command
+                args = self.args[1:]  # The rest arguments
+
+                start_time = time.time()
+
+                gpt_response = query_gpt3_for_unrecognized_command(cmd, args)
+
+                duration = time.time() - start_time
+                duration_str = "{:.2f} seconds".format(duration)
+
+                log.msg(
+                    eventid='cowrie.command.success', 
+                    input="sudo ".join(self.args), 
+                    output=gpt_response, 
+                    duration_str=duration_str,
+                    format="LLM response for unrecognized sudo command: %(input)s, %(output)s, time used: %(duration_str)s"
+                )
+                self.write(gpt_response + "\n")
+            else:
+                self.short_help()
+            self.exit()
+        else:
+            cmd = parsed_arguments[0]
+            cmdclass = self.protocol.getCommand(cmd, self.environ["PATH"].split(":"))
+
+            if cmdclass:
+                # If a command class is found, proceed as normal
+                command = StdOutStdErrEmulationProtocol(
+                    self.protocol, cmdclass, parsed_arguments[1:], None, None
+                )
+                self.protocol.pp.insert_command(command)
+                if self.input_data:
+                    self.writeBytes(self.input_data)
+                self.exit()
+            else:
+                # No command class found; this is an unrecognized command will handel by gpt
+                # args = parsed_arguments[1:]  # Arguments to the unrecognized command
+                # gpt_response = query_gpt3_for_unrecognized_command(cmd, args)
+                # self.write(gpt_response + "\n")
+                # self.exit()
+                self.short_help()

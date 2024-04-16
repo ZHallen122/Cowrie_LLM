@@ -1,5 +1,5 @@
 # Cowrie_LLM
-This is the project based on Cowrie: https://github.com/cowrie/cowrie
+This is a project based on Cowrie: https://github.com/cowrie/cowrie. Using gpt to explore ways to enhance Cowrie honeypot
 
 # Setting up
 

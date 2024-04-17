@@ -2,34 +2,45 @@ import re
 import os
 import sys
 import csv
-import base64
+import shlex
 
-def extract_commands(data, log_file):
-    with open(log_file, 'r') as f:
-        for line in f:
-            # match = re.search(r'^.* \[twisted.conch.ssh.session#info\] Executing command "(.*)"', line)
-            match = re.search(r'CMD: \s*(.+)', line)
+def extract_and_split_commands(log_file):
+    """Extracts commands from a given log file using regex and splits combined commands while considering shell constructs."""
+    commands = []
+    with open(log_file, 'r') as file:
+        for line in file:
+            match = re.search(r'CMD:\s*(.+)', line)
             if match:
-                # command = match.groups()
-                # data.append(command[0][2:-1])
-                data.append(match.group(1).strip())
+                command_line = match.group(1).strip()
+                try:
+                    parsed_commands = shlex.split(command_line, posix=True)
+                    joined_commands = ' '.join(parsed_commands)
+                    # Split on '&&', '||', and ';' but not on single '&'
+                    split_commands = re.split(r'\s*&&\s*|\s*\|\|\s*|\s*;\s*', joined_commands)
+                except ValueError:
+                    # If shlex fails due to unmatched quotes, split manually and avoid splitting '&'
+                    split_commands = re.split(r'\s*&&\s*|\s*\|\|\s*|\s*;\s*', command_line)
+
+                for cmd in split_commands:
+                    if cmd:  # Filter out any empty commands
+                        commands.append(cmd)
+    return commands
 
 if __name__ == "__main__":
-
     if len(sys.argv) != 3:
-        print("Usage: %s <logfolder> <output.csv>" % os.path.basename(sys.argv[0]))
+        script_name = os.path.basename(sys.argv[0])
+        print(f"Usage: {script_name} <log_folder> <output.csv>")
         sys.exit(1)
-    path = sys.argv[1]
-    fields = ['command']
 
-    logs = os.listdir(path)
-    data = list()
-    for log in logs:
-        extract_commands(data, os.path.join(path, log))
+    log_folder, output_file = sys.argv[1], sys.argv[2]
+    all_commands = []
 
-    outFile = sys.argv[2]
-    template = "{data},\n"
-    with open(outFile, 'w') as file:
-        for datum in data:
-            fDatum = (str(datum))
-            file.write(template.format(data = fDatum))
+    for log in os.listdir(log_folder):
+        log_path = os.path.join(log_folder, log)
+        all_commands.extend(extract_and_split_commands(log_path))
+
+    with open(output_file, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(['command'])
+        for command in all_commands:
+            csvwriter.writerow([command])

@@ -11,7 +11,7 @@ This is a project based on Cowrie: https://github.com/cowrie/cowrie. Using gpt t
     pip install -r requirements.txt
 
     Prepare gpt api at openai
-    create a .env file in /LLM/GPT_3.5
+    create a .env file in /LLM/GPT
     OPENAI_API_KEY=YOUR_API_KEY
 
 Then Follow the oringinal Cowrie documentation After step1

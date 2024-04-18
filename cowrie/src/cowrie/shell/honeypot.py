@@ -19,7 +19,7 @@ from cowrie.shell import fs
 
 import sys
 current_script_path = os.path.dirname(os.path.abspath(__file__))
-module_path = os.path.join(current_script_path, '../../../../LLM/GPT_3.5')
+module_path = os.path.join(current_script_path, '../../../../LLM/GPT')
 sys.path.insert(0, module_path)
 
 from gpt_utils import query_gpt3_for_unrecognized_command

@@ -3,20 +3,12 @@ This is a project based on Cowrie: https://github.com/cowrie/cowrie. Using gpt t
 
 # Setting up
 
+All the detail is in this google doc https://docs.google.com/document/d/1Gu0bzeLyL6aHPrL0rv3BXLlT9zJ5arIR5O4q2COMCMo/edit?usp=sharing
+
 ## Software required to run locally same as cowrie:
     Python 3.8+
     python-virtualenv
-
-    cd cowrie
-    pip install -r requirements.txt
-
-    Prepare gpt api at openai
-    create a .env file in /LLM/GPT
-    OPENAI_API_KEY=YOUR_API_KEY
-
-Then Follow the oringinal Cowrie documentation After step1
-https://cowrie.readthedocs.io/en/latest/INSTALL.html
-
+    
 # Folder structure
 - `/logging` - The analysis script folder.
 - `/cowrie` - The original Cowrie with code handle with LLM.

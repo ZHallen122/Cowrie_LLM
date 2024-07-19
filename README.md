@@ -1,6 +1,9 @@
 # Cowrie_LLM
 This is a project based on Cowrie: https://github.com/cowrie/cowrie. Using gpt to explore ways to enhance Cowrie honeypot
 
+# Presentation ppt
+https://docs.google.com/presentation/d/1YeKiOXdn3KUJitC_saducUFLkYWNfrnxAIVHwIYsKpM/edit?usp=sharing
+
 # Setting up
 
 All the detail is in this google doc https://docs.google.com/document/d/1Gu0bzeLyL6aHPrL0rv3BXLlT9zJ5arIR5O4q2COMCMo/edit?usp=sharing
